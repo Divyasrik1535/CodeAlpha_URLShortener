@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import URL
+from django.shortcuts import render
 
 @api_view(['POST'])
 def shorten_url(request):
@@ -40,3 +41,14 @@ def redirect_url(request, short_code):
         return redirect(url.original_url)
     except URL.DoesNotExist:
         return redirect('/')
+def home(request):
+    short_url = None
+
+    if request.method == "POST":
+        original_url = request.POST.get("original_url")
+
+        if original_url:
+            url = URL.objects.create(original_url=original_url)
+            short_url = request.build_absolute_uri(f'/s/{url.short_code}/')
+
+    return render(request, "index.html", {"short_url": short_url})
